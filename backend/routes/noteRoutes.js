@@ -8,9 +8,16 @@ const {
   deleteNote
 } = require('../controllers/noteController');
 
-router.get('/', getNotes);
-router.post('/', createNote);
-router.put('/:id', updateNote);
-router.delete('/:id', deleteNote);
+//  IMPORT AUTH
+const { protect } = require('../middleware/authMiddleware');
+
+//  ROUTES (TANI TË MBROJTURA)
+router.route('/')
+  .get(protect, getNotes)
+  .post(protect, createNote);
+
+router.route('/:id')
+  .put(protect, updateNote)
+  .delete(protect, deleteNote);
 
 module.exports = router;

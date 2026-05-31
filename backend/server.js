@@ -1,29 +1,33 @@
-// Importing necessary modules
 const express = require('express');
-const dotenv = require('dotenv').config();
-const { errorHandler } = require('./middleware/errorMiddleware');
-const connectDB = require('./connect/database');
+require('dotenv').config();
 
-// Connecting to the database
+const connectDB = require('./connect/database');
+const { errorHandler } = require('./middleware/errorMiddleware');
+
+//  connect database
 connectDB();
 
-// Setting the port for the server
-const port = process.env.PORT || 5000;
-
-// Initializing Express
 const app = express();
+const port = process.env.PORT || 8000;
 
-// Middleware
+//  middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Routes (NOTE MANAGER)
+// test route (optional)
+app.get('/', (req, res) => {
+  res.send('Server works ');
+});
+
+//  NOTES ROUTES
 app.use('/api/notes', require('./routes/noteRoutes'));
 
-// Error middleware
+
+app.use('/api/users', require('./routes/userRoutes'));
+//  error middleware
 app.use(errorHandler);
 
-// Start server
-app.listen(port, () =>
-  console.log(`Server listening on http://localhost:${port}`)
-);
+//  start server
+app.listen(port, () => {
+  console.log(`Server listening on http://localhost:${port}`);
+});
