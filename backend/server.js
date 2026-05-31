@@ -1,33 +1,25 @@
 const express = require('express');
-require('dotenv').config();
-
+const dotenv = require('dotenv').config();
 const connectDB = require('./connect/database');
-const { errorHandler } = require('./middleware/errorMiddleware');
-
-//  connect database
-connectDB();
+const cors = require('cors');
 
 const app = express();
-const port = process.env.PORT || 8000;
 
-//  middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+//  lidh databazën
+connectDB();
 
-// test route (optional)
-app.get('/', (req, res) => {
-  res.send('Server works ');
-});
+//  MIDDLEWARE
+app.use(express.json()); // për JSON body
+app.use(cors());         // për lidhje frontend-backend
 
-//  NOTES ROUTES
+//  ROUTES
+app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/notes', require('./routes/noteRoutes'));
 
+//  PORT
+const PORT = process.env.PORT || 8000;
 
-app.use('/api/users', require('./routes/userRoutes'));
-//  error middleware
-app.use(errorHandler);
-
-//  start server
-app.listen(port, () => {
-  console.log(`Server listening on http://localhost:${port}`);
+//  START SERVER
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
