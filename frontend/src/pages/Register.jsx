@@ -1,4 +1,10 @@
 import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { toast } from "react-toastify";
+
+import { useRegisterMutation } from "../store/apis/userApi";
+import { setUser } from "../store/slices/userSlice";
 
 const Register = () => {
 
@@ -11,6 +17,11 @@ const Register = () => {
 
   const { name, email, password, password2 } = formData;
 
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const [register, { isLoading }] = useRegisterMutation();
+
   const onChange = (e) => {
     setFormData({
       ...formData,
@@ -18,47 +29,84 @@ const Register = () => {
     });
   };
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
 
     if (password !== password2) {
-      alert("Passwords do not match");
-    } else {
-      console.log(formData);
+      toast.error("Passwords do not match");
+      return;
+    }
+
+    try {
+      const data = await register({ name, email, password }).unwrap();
+
+      // ✅ RUAN USER + FIX AUTH
+      dispatch(setUser(data));
+      localStorage.setItem("user", JSON.stringify(data));
+
+      toast.success("Registration successful!");
+
+      navigate("/");
+
+    } catch (error) {
+      toast.error(error?.data?.message || "Register failed");
     }
   };
 
   return (
-    <>
-      <section className="heading">
-        <h2>Register</h2>
-        <p>Create account</p>
-      </section>
+    <section className="form">
 
-      <section className="form">
-        <form onSubmit={onSubmit}>
+      <h2>Register</h2>
 
-          <div className="form-group">
-            <input name="name" value={name} onChange={onChange} placeholder="Name"/>
-          </div>
+      <form onSubmit={onSubmit}>
 
-          <div className="form-group">
-            <input name="email" value={email} onChange={onChange} placeholder="Email"/>
-          </div>
+        <input
+          type="text"
+          name="name"
+          value={name}
+          placeholder="Enter name"
+          onChange={onChange}
+          required
+        />
 
-          <div className="form-group">
-            <input type="password" name="password" value={password} onChange={onChange} placeholder="Password"/>
-          </div>
+        <input
+          type="email"
+          name="email"
+          value={email}
+          placeholder="Enter email"
+          onChange={onChange}
+          required
+        />
 
-          <div className="form-group">
-            <input type="password" name="password2" value={password2} onChange={onChange} placeholder="Confirm Password"/>
-          </div>
+        <input
+          type="password"
+          name="password"
+          value={password}
+          placeholder="Enter password"
+          onChange={onChange}
+          required
+        />
 
-          <button type="submit">Register</button>
+        <input
+          type="password"
+          name="password2"
+          value={password2}
+          placeholder="Confirm password"
+          onChange={onChange}
+          required
+        />
 
-        </form>
-      </section>
-    </>
+        <button type="submit" className="btn" disabled={isLoading}>
+          {isLoading ? "Registering..." : "Register"}
+        </button>
+
+      </form>
+
+      <p style={{ marginTop: "10px" }}>
+        Already have an account? <Link to="/login">Login</Link>
+      </p>
+
+    </section>
   );
 };
 

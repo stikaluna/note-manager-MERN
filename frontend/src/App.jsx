@@ -1,37 +1,44 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-//  import komponentët
-import Header from "./components/Header";
+//  PAGES
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 
+//  KOMPONENTË
+import Header from "./components/Header";
+import NoteList from "./components/NoteList"; 
+
+//  TOAST
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 function App() {
   return (
-    <BrowserRouter>
+    <Router>
 
-      {/*  Header shfaqet në çdo faqe */}
+      {/*  HEADER */}
       <Header />
 
-      {/*  përmbajtja */}
-      <div className="container">
+      {/*  ROUTES */}
+      <Routes>
 
-        <Routes>
+        {/* Dashboard */}
+        <Route path="/" element={<Dashboard />} />
 
-          {/*  Dashboard (homepage) */}
-          <Route path="/" element={<Dashboard />} />
+        {/* Auth */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
-          {/*  Login */}
-          <Route path="/login" element={<Login />} />
+        {/*  NEW ROUTE (SI PROFESORI) */}
+        <Route path="/allnotes" element={<NoteList />} />
 
-          {/*  Register */}
-          <Route path="/register" element={<Register />} />
+      </Routes>
 
-        </Routes>
+      {/*  TOAST */}
+      <ToastContainer />
 
-      </div>
-
-    </BrowserRouter>
+    </Router>
   );
 }
 

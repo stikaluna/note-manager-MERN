@@ -1,124 +1,43 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+
+import NoteForm from "../components/NoteForm";
 
 const Dashboard = () => {
 
-  const [notes, setNotes] = useState([]);
-  const [text, setText] = useState("");
+  const navigate = useNavigate();
+  const user = useSelector((state) => state.user);
 
-  // ✅ merr user nga localStorage
-  const user = JSON.parse(localStorage.getItem("user"));
-
-  // ✅ GET notes
-  const getNotes = async () => {
-    try {
-
-      const config = {
-        headers: {
-          Authorization: `Bearer ${user.token}`
-        }
-      };
-
-      const response = await axios.get(
-        "http://localhost:8000/api/notes",
-        config
-      );
-
-      setNotes(response.data);
-
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  // ✅ kur hapet faqja
+  //  protect dashboard
   useEffect(() => {
-    getNotes();
-  }, []);
-
-  // ✅ CREATE note
-  const addNote = async (e) => {
-    e.preventDefault();
-
-    try {
-      const config = {
-        headers: {
-          Authorization: `Bearer ${user.token}`
-        }
-      };
-
-      await axios.post(
-        "http://localhost:8000/api/notes",
-        { text },
-        config
-      );
-
-      setText("");
-      getNotes();
-
-    } catch (error) {
-      console.error(error);
+    if (!user) {
+      navigate("/login");
     }
-  };
-
-  // ✅ DELETE note
-  const deleteNote = async (id) => {
-    try {
-      const config = {
-        headers: {
-          Authorization: `Bearer ${user.token}`
-        }
-      };
-
-      await axios.delete(
-        `http://localhost:8000/api/notes/${id}`,
-        config
-      );
-
-      getNotes();
-
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  }, [user, navigate]);
 
   return (
-    <div className="container">
+    <>
+      {/*  HEADER */}
+      <section className="heading">
+        <h2>Welcome {user?.name}</h2>
+        <p>Manage your notes</p>
+      </section>
 
-      <h2>Dashboard</h2>
+      {/*  FORM */}
+      <NoteForm />
 
-      {/* ✅ FORM */}
-      <form onSubmit={addNote} className="form">
-
-        <div className="form-group">
-          <input
-            type="text"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Write a note..."
-          />
-        </div>
-
-        <button type="submit">Add Note</button>
-
-      </form>
-
-      {/* ✅ LISTA */}
-      <div style={{ marginTop: "20px" }}>
-        {notes.map((note) => (
-          <div key={note._id} className="card">
-
-            <p>{note.text}</p>
-
-            <button onClick={() => deleteNote(note._id)}>
-              Delete
-            </button>
-
-          </div>
-        ))}
+      {/*  BUTTON SI PROFESORI */}
+      <div style={{ textAlign: "center", marginTop: "20px" }}>
+        <button
+          className="btn"
+          onClick={() => navigate("/allnotes")}
+        >
+          Check Notes
+        </button>
       </div>
 
-    </div>
+    </>
   );
 };
 

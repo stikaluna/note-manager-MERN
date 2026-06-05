@@ -1,10 +1,12 @@
 import { useState } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { toast } from "react-toastify";
+
+import { useLoginMutation } from "../store/apis/userApi";
+import { setUser } from "../store/slices/userSlice";
 
 const Login = () => {
-
-  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -12,6 +14,11 @@ const Login = () => {
   });
 
   const { email, password } = formData;
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const [login, { isLoading }] = useLoginMutation();
 
   const onChange = (e) => {
     setFormData({
@@ -24,63 +31,57 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      const response = await axios.post(
-        "http://localhost:8000/api/users/login",
-        { email, password }
-      );
+      const data = await login({ email, password }).unwrap();
 
-      console.log("Login success:", response.data);
+      // ✅ RUAN USER + ZGJIDH PROBLEMIN
+      dispatch(setUser(data));
+      localStorage.setItem("user", JSON.stringify(data));
 
-      // ✅ ruaj user + token
-      localStorage.setItem("user", JSON.stringify(response.data));
+      toast.success("Login successful!");
 
-      // ✅ redirect
       navigate("/");
 
     } catch (error) {
-      console.error(error.response?.data?.message);
+      toast.error(error?.data?.message || "Login failed");
     }
   };
 
   return (
-    <>
-      <section className="heading">
-        <h2>Login</h2>
-        <p>Login to your account</p>
-      </section>
+    <section className="form">
 
-      <section className="form">
-        <form onSubmit={onSubmit}>
+      <h2>Login</h2>
 
-          <div className="form-group">
-            <input
-              type="email"
-              name="email"
-              value={email}
-              onChange={onChange}
-              placeholder="Enter email"
-              required
-            />
-          </div>
+      <form onSubmit={onSubmit}>
 
-          <div className="form-group">
-            <input
-              type="password"
-              name="password"
-              value={password}
-              onChange={onChange}
-              placeholder="Enter password"
-              required
-            />
-          </div>
+        <input
+          type="email"
+          name="email"
+          value={email}
+          placeholder="Enter email"
+          onChange={onChange}
+          required
+        />
 
-          <div className="form-group">
-            <button type="submit">Login</button>
-          </div>
+        <input
+          type="password"
+          name="password"
+          value={password}
+          placeholder="Enter password"
+          onChange={onChange}
+          required
+        />
 
-        </form>
-      </section>
-    </>
+        <button type="submit" className="btn" disabled={isLoading}>
+          {isLoading ? "Logging..." : "Login"}
+        </button>
+
+      </form>
+
+      <p style={{ marginTop: "10px" }}>
+        No account? <Link to="/register">Register</Link>
+      </p>
+
+    </section>
   );
 };
 
